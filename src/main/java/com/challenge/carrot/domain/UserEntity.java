@@ -1,10 +1,12 @@
 package com.challenge.carrot.domain;
 
 import com.challenge.carrot.dto.SignupRequestDto;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Getter
 @Setter
@@ -34,6 +36,10 @@ public class UserEntity {
 
     @Column(nullable = false)
     private String nickname;
+
+    @JsonIgnoreProperties({"user"})
+    @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST)
+    private List<ProductEntity> products;
 
 //    public User(String email, String password, String username, String number, String nickname){
 //        this.email = email;

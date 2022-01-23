@@ -1,6 +1,7 @@
 package com.challenge.carrot.security;
 
 import com.challenge.carrot.domain.UserEntity;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
