@@ -1,48 +1,43 @@
 package com.challenge.carrot.service;
 
-import com.challenge.carrot.domain.User;
-import com.challenge.carrot.dto.SignupRequestDto;
+import com.challenge.carrot.domain.UserEntity;
 import com.challenge.carrot.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
-
-@RequiredArgsConstructor
+@Slf4j
 @Service
 public class UserService {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    @Autowired
+    private UserRepository userRepository;
 
-//    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder){
-//        this.userRepository = userRepository;
-//        this.passwordEncoder = passwordEncoder;
-//    }
-
-    public User registerUser(SignupRequestDto signupRequestDto){
-        String email = signupRequestDto.getEmail();
-        // 회원 email 중복 확인
-        Optional<User> found = userRepository.findByEmail(email);
-        if (found.isPresent()) {
-            throw new IllegalArgumentException("중복된 email 이 존재합니다.");
+    public UserEntity create(final UserEntity userEntity) {
+        if(userEntity == null || userEntity.getEmail() == null ) {
+            throw new RuntimeException("Invalid arguments");
+        }
+        final String email = userEntity.getEmail();
+        if(userRepository.existsByEmail(email)) {
+            log.warn("Email already exists {}", email);
+            throw new RuntimeException("Email already exists");
         }
 
-        String password = passwordEncoder.encode(signupRequestDto.getPassword());
-        String username = signupRequestDto.getUsername();
-        String number = signupRequestDto.getNumber();
-        String nickname = signupRequestDto.getNickname();
-
-        User user = new User(email, password, username, number, nickname);
-        userRepository.save(user);
-
-        return user;
+        return userRepository.save(userEntity);
     }
 
-    public List<User> getUser(){
-        return userRepository.findAll();
+    public UserEntity getByCredentials(final String email, final String password, final PasswordEncoder encoder) {
+        final UserEntity originalUser = userRepository.findByEmail(email);
+
+        // matches 메서드를 이용해 패스워드가 같은지 확인
+        if(originalUser != null && encoder.matches(password, originalUser.getPassword())) {
+            return originalUser;
+        }
+        return null;
     }
+
+//    public UserEntity getByCredentials(String email, String password) {
+//        return userRepository.findByEmailAndPassword(email, password);
+//    }
 }
